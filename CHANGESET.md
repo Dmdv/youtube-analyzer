@@ -32,3 +32,14 @@
     - Added: docs/diagrams/agent-architecture.png
     - Added: docs/diagrams/multi-agent-orchestration.png
     - Added: docs/diagrams/solution-evolution.png
+
+- 2026-01-05T12:30:00+07:00 9e2c0ff
+  - feat: add seed mode for comprehensive architecture document generation
+  - Add 'seed' mode that generates structured development seed documents
+  - Includes 8 sections: executive summary, architectural patterns, insights,
+    terminology, implementation recommendations, evolution, roadmap, resources
+  - Uses higher max_tokens (8192) for comprehensive output
+  - Files changed:
+    - Modified: youtube_analyzer.py
+    - Modified: README.md
+    - Modified: ARCHITECTURE.md
