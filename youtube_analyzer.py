@@ -307,7 +307,7 @@ def preflight_check(api_key: str, model: str) -> bool:
         # Minimal request to test connectivity and model availability
         response = client.chat.completions.create(
             model=model,
-            max_tokens=5,
+            max_tokens=16,  # Some models require min 16 tokens
             messages=[{"role": "user", "content": "Hi"}],
         )
         return True
