@@ -67,6 +67,7 @@ POE_MODELS = [
     "gpt-5-mini",
     "gpt-5-codex",
     # Claude series (Anthropic)
+    "claude-opus-4.5",
     "claude-sonnet-4.5",
     "claude-sonnet-4",
     "claude-sonnet-4-reasoning",
@@ -75,7 +76,12 @@ POE_MODELS = [
     "gpt-4.1-mini",
 ]
 DEFAULT_MODEL = "gpt-5.2-pro"
-FALLBACK_MODEL = "claude-sonnet-4.5"
+FALLBACK_MODEL = "claude-opus-4.5"
+
+# Timeout settings (reasoning models like gpt-5.2-pro can take 5-10 minutes)
+REASONING_MODELS = {"gpt-5.2-pro", "gpt-5.2", "gpt-5.1", "gpt-5-pro", "gpt-5"}
+DEFAULT_TIMEOUT = 60.0
+REASONING_TIMEOUT = 600.0  # 10 minutes for reasoning models
 
 
 # Analysis prompts for different modes
@@ -352,10 +358,12 @@ def format_transcript(segments: list, include_timestamps: bool = True) -> str:
 
 def preflight_check(api_key: str, model: str) -> bool:
     """Test if the Poe API is responsive with a minimal request."""
+    # Use longer timeout for reasoning models
+    timeout = 60.0 if model in REASONING_MODELS else 30.0
     client = openai.OpenAI(
         api_key=api_key,
         base_url="https://api.poe.com/v1",
-        timeout=30.0,
+        timeout=timeout,
     )
 
     try:
@@ -411,6 +419,8 @@ def analyze_with_ai(transcript: str, mode: str, model: str = DEFAULT_MODEL, ques
             sys.exit(1)
 
     print(f"API ready. Using model: {active_model}", file=sys.stderr)
+    if active_model in REASONING_MODELS:
+        print(f"Note: {active_model} is a reasoning model and may take 5-10 minutes for complex analysis.", file=sys.stderr)
 
     # Warn about very long transcripts (rough estimate: 4 chars per token)
     estimated_tokens = len(transcript) // 4
@@ -425,10 +435,13 @@ def analyze_with_ai(transcript: str, mode: str, model: str = DEFAULT_MODEL, ques
     else:
         prompt = prompt_template.format(transcript=transcript)
 
+    # Use longer timeout for reasoning models (can take 5-10 minutes)
+    timeout = REASONING_TIMEOUT if active_model in REASONING_MODELS else DEFAULT_TIMEOUT
+
     client = openai.OpenAI(
         api_key=api_key,
         base_url="https://api.poe.com/v1",
-        timeout=60.0,
+        timeout=timeout,
     )
 
     # Streaming analysis with verified model

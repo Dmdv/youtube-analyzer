@@ -61,8 +61,8 @@ Choose from multiple AI models via Poe API:
 # Use default (gpt-5.2-pro - most capable)
 python youtube_analyzer.py URL
 
-# Use Claude Sonnet 4.5 (fallback model)
-python youtube_analyzer.py URL --model claude-sonnet-4.5
+# Use Claude Opus 4.5 (fallback model)
+python youtube_analyzer.py URL --model claude-opus-4.5
 
 # Use GPT-5.2 (faster, cheaper)
 python youtube_analyzer.py URL --model gpt-5.2
@@ -74,8 +74,9 @@ python youtube_analyzer.py URL --model gpt-5.1-codex
 **Available models:**
 | Model | Description |
 |-------|-------------|
-| `gpt-5.2-pro` | **Default** - Most capable GPT (256K context) |
-| `claude-sonnet-4.5` | **Fallback** - Anthropic Claude (256K context) |
+| `gpt-5.2-pro` | **Default** - Most capable GPT reasoning model (256K context, 5-10 min) |
+| `claude-opus-4.5` | **Fallback** - Anthropic Claude Opus (256K context) |
+| `claude-sonnet-4.5` | Fast Claude variant (256K context) |
 | `gpt-5.2` | Fast GPT-5 variant |
 | `gpt-5.1` | Previous GPT-5 version |
 | `gpt-5.1-codex` | Code-optimized GPT-5 |
@@ -88,8 +89,9 @@ python youtube_analyzer.py URL --model gpt-5.1-codex
 
 The script automatically:
 1. **Tests API connectivity** before processing (preflight check)
-2. **Falls back to claude-sonnet-4.5** if the primary model is unavailable
+2. **Falls back to claude-opus-4.5** if the primary model is unavailable
 3. **Reports clear errors** if both models fail
+4. **Uses extended timeouts** for reasoning models (10 min vs 60 sec)
 
 ## Analysis Modes
 
