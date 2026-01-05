@@ -55,3 +55,11 @@
     - Modified: youtube_analyzer.py
     - Modified: README.md
     - Added: docs/ERC3_SEED_GENERATED.md
+
+- 2026-01-05T11:54:08+07:00 736bd35
+  - docs: add ERC3 seed document generated with gpt-5.2-pro
+  - Generated via seed mode API with 10-minute timeout
+  - Comprehensive 8-section architecture document in Russian
+  - Validates reasoning model timeout fix (600s)
+  - Files changed:
+    - Added: docs/ERC3_SEED_GPT52PRO.md
