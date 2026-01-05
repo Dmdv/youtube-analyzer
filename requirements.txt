@@ -1,0 +1,7 @@
+# Core dependencies
+youtube-transcript-api>=1.2.0    # Extract YouTube captions (v1.x instance-based API)
+openai>=1.0.0                    # Poe API (OpenAI-compatible)
+
+# Optional: for videos without captions (Whisper fallback)
+# openai-whisper>=20231117        # Speech-to-text (requires ffmpeg)
+# yt-dlp>=2024.0.0                # YouTube downloader (also: brew install yt-dlp)
