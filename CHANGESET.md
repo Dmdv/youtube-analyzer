@@ -63,3 +63,12 @@
   - Validates reasoning model timeout fix (600s)
   - Files changed:
     - Added: docs/ERC3_SEED_GPT52PRO.md
+
+- 2026-01-05T12:00:00+07:00 0511c1c
+  - fix: improve error handling and add subprocess timeouts
+  - Replace bare except clauses with specific NoTranscriptFound exceptions
+  - Add timeout (300s) to yt-dlp, (600s) to whisper, (10s) to which checks
+  - Handle httpx.TimeoutException and TimeoutError in API streaming
+  - Detect and warn on truncated/incomplete responses via finish_reason
+  - Files changed:
+    - Modified: youtube_analyzer.py
