@@ -14,3 +14,21 @@
     - Added: youtube-analyzer/RESEARCH.md
     - Added: youtube-analyzer/requirements.txt
     - Added: youtube-analyzer/youtube_analyzer.py
+
+- 2026-01-05T11:13:19+07:00 7331b5b
+  - docs: add comprehensive analysis modes documentation and ERC3 seed document
+  - Update README with detailed mode explanations and examples
+  - Fix installation path and add venv setup instructions
+  - Add ERC3 Agent Architecture seed document with:
+    - 7 architectural patterns (dynamic prompts, context builder, validators)
+    - Solution evolution timeline (V1-V6)
+    - Keywords and terminology glossary
+    - Development roadmap with priorities
+    - Enterprise considerations (security, cost, compliance)
+  - Add architecture diagrams (agent flow, evolution, multi-agent)
+  - Files changed:
+    - Modified: README.md
+    - Added: docs/ERC3_AGENT_ARCHITECTURE_SEED.md
+    - Added: docs/diagrams/agent-architecture.png
+    - Added: docs/diagrams/multi-agent-orchestration.png
+    - Added: docs/diagrams/solution-evolution.png
