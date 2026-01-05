@@ -72,3 +72,10 @@
   - Detect and warn on truncated/incomplete responses via finish_reason
   - Files changed:
     - Modified: youtube_analyzer.py
+
+- 2026-01-05T12:30:00+07:00 3b9274d
+  - docs: add seed mode test output (gpt-5.2-pro)
+  - Comprehensive 8-section architecture document (545 lines)
+  - Generated after error handling fixes validation
+  - Files changed:
+    - Added: docs/ERC3_SEED_TEST.md
