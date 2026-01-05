@@ -47,6 +47,7 @@ except ImportError:
 
 try:
     import openai
+    import httpx
     HAS_OPENAI = True
 except ImportError:
     HAS_OPENAI = False
@@ -231,28 +232,28 @@ def get_transcript_from_api(video_id: str) -> Optional[list]:
         transcript_list = ytt_api.list(video_id)
 
         # Priority: manual English > auto English > any manual > any auto
+        transcript = None
         try:
             transcript = transcript_list.find_manually_created_transcript(['en', 'en-US', 'en-GB'])
-        except:
+        except NoTranscriptFound:
             try:
                 transcript = transcript_list.find_generated_transcript(['en', 'en-US', 'en-GB'])
-            except:
-                try:
-                    # Try any manually created transcript
-                    for t in transcript_list:
-                        if not t.is_generated:
-                            transcript = t
-                            break
-                    else:
-                        raise Exception("No manual transcript")
-                except:
-                    # Fall back to any auto-generated transcript
+            except NoTranscriptFound:
+                # Try any manually created transcript
+                for t in transcript_list:
+                    if not t.is_generated:
+                        transcript = t
+                        break
+
+                # Fall back to any auto-generated transcript
+                if transcript is None:
                     for t in transcript_list:
                         if t.is_generated:
                             transcript = t
                             break
-                    else:
-                        raise Exception("No transcript found")
+
+        if transcript is None:
+            raise NoTranscriptFound(video_id, ["en"], "No suitable transcript found")
 
         return transcript.fetch()
 
@@ -269,12 +270,12 @@ def get_transcript_from_api(video_id: str) -> Optional[list]:
 def get_transcript_with_whisper(video_id: str) -> Optional[list]:
     """Download audio and transcribe with Whisper (fallback)."""
     # Check if yt-dlp is available
-    if subprocess.run(['which', 'yt-dlp'], capture_output=True).returncode != 0:
+    if subprocess.run(['which', 'yt-dlp'], capture_output=True, timeout=10).returncode != 0:
         print("Error: yt-dlp not found. Install with: brew install yt-dlp", file=sys.stderr)
         return None
 
     # Check if whisper is available
-    if subprocess.run(['which', 'whisper'], capture_output=True).returncode != 0:
+    if subprocess.run(['which', 'whisper'], capture_output=True, timeout=10).returncode != 0:
         print("Error: whisper not found. Install with: pip install openai-whisper", file=sys.stderr)
         return None
 
@@ -283,12 +284,16 @@ def get_transcript_with_whisper(video_id: str) -> Optional[list]:
     with tempfile.TemporaryDirectory() as tmpdir:
         audio_path = Path(tmpdir) / "audio.mp3"
 
-        # Download audio
-        result = subprocess.run([
-            'yt-dlp', '-x', '--audio-format', 'mp3',
-            '-o', str(audio_path),
-            f'https://youtube.com/watch?v={video_id}'
-        ], capture_output=True, text=True)
+        # Download audio (timeout: 5 minutes for slow connections)
+        try:
+            result = subprocess.run([
+                'yt-dlp', '-x', '--audio-format', 'mp3',
+                '-o', str(audio_path),
+                f'https://youtube.com/watch?v={video_id}'
+            ], capture_output=True, text=True, timeout=300)
+        except subprocess.TimeoutExpired:
+            print("Error: yt-dlp timed out after 5 minutes", file=sys.stderr)
+            return None
 
         if result.returncode != 0:
             print(f"Error downloading audio: {result.stderr}", file=sys.stderr)
@@ -302,13 +307,17 @@ def get_transcript_with_whisper(video_id: str) -> Optional[list]:
 
         actual_audio = audio_files[0]
 
-        # Transcribe with Whisper
-        result = subprocess.run([
-            'whisper', str(actual_audio),
-            '--model', 'base',
-            '--output_format', 'json',
-            '--output_dir', tmpdir
-        ], capture_output=True, text=True)
+        # Transcribe with Whisper (timeout: 10 minutes for long videos)
+        try:
+            result = subprocess.run([
+                'whisper', str(actual_audio),
+                '--model', 'base',
+                '--output_format', 'json',
+                '--output_dir', tmpdir
+            ], capture_output=True, text=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            print("Error: Whisper timed out after 10 minutes", file=sys.stderr)
+            return None
 
         if result.returncode != 0:
             print(f"Error transcribing: {result.stderr}", file=sys.stderr)
@@ -448,6 +457,7 @@ def analyze_with_ai(transcript: str, mode: str, model: str = DEFAULT_MODEL, ques
     # Use higher token limit for seed mode (comprehensive documents)
     max_tokens = 8192 if mode == "seed" else 4096
     response_text = ""
+    finish_reason = None
     try:
         with client.chat.completions.create(
             model=active_model,
@@ -458,6 +468,9 @@ def analyze_with_ai(transcript: str, mode: str, model: str = DEFAULT_MODEL, ques
             for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
                     response_text += chunk.choices[0].delta.content
+                # Track finish_reason from final chunk
+                if chunk.choices and chunk.choices[0].finish_reason:
+                    finish_reason = chunk.choices[0].finish_reason
     except openai.AuthenticationError:
         print("Error: Invalid POE_API_KEY. Check your key at https://poe.com/api_key", file=sys.stderr)
         sys.exit(1)
@@ -470,6 +483,17 @@ def analyze_with_ai(transcript: str, mode: str, model: str = DEFAULT_MODEL, ques
     except openai.APIStatusError as e:
         print(f"Error: API request failed: {getattr(e, 'message', str(e))}", file=sys.stderr)
         sys.exit(1)
+    except (httpx.TimeoutException, TimeoutError):
+        timeout_mins = int(timeout // 60)
+        print(f"Error: Request timed out after {timeout_mins} minutes.", file=sys.stderr)
+        print("Try a faster model or shorter transcript.", file=sys.stderr)
+        sys.exit(1)
+
+    # Warn if response may be incomplete
+    if finish_reason == "length":
+        print("Warning: Response was truncated due to token limit.", file=sys.stderr)
+    elif finish_reason is None and response_text:
+        print("Warning: Stream ended unexpectedly. Response may be incomplete.", file=sys.stderr)
 
     return response_text
 
