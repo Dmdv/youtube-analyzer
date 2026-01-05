@@ -43,3 +43,15 @@
     - Modified: youtube_analyzer.py
     - Modified: README.md
     - Modified: ARCHITECTURE.md
+
+- 2026-01-05T13:15:00+07:00 6e9face
+  - fix: add dynamic timeouts for reasoning models and update fallback
+  - Change fallback model from claude-sonnet-4.5 to claude-opus-4.5
+  - Add REASONING_MODELS set with GPT-5.x reasoning variants
+  - Increase timeout from 60s to 600s (10 min) for reasoning models
+  - Add user notification when using reasoning models
+  - Add ERC3_SEED_GENERATED.md generated via seed mode API
+  - Files changed:
+    - Modified: youtube_analyzer.py
+    - Modified: README.md
+    - Added: docs/ERC3_SEED_GENERATED.md
