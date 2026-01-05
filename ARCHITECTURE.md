@@ -324,6 +324,80 @@ Transcript:
 python youtube_analyzer.py URL --mode qa --question "What tools does the speaker recommend?"
 ```
 
+### Seed Mode
+**Purpose:** Generate comprehensive architecture seed documents for development
+
+**Prompt:**
+```
+Analyze this video transcript and create a comprehensive SEED DOCUMENT for software development.
+
+Extract and organize ALL of the following:
+
+## 1. EXECUTIVE SUMMARY
+- Main topic and purpose of the content
+- Key problem being solved
+- Primary solution approach
+
+## 2. ARCHITECTURAL PATTERNS & DECISIONS
+For each pattern/architecture discussed:
+- Pattern name and description
+- Why it was chosen (trade-offs considered)
+- How it works (implementation approach)
+- Benefits and limitations
+
+## 3. KEY INSIGHTS & TAKEAWAYS
+- Technical insights (numbered list)
+- Strategic insights
+- Lessons learned
+- Best practices mentioned
+
+## 4. TERMINOLOGY & KEYWORDS
+- Technical terms with definitions
+- Domain-specific vocabulary
+- Acronyms and their meanings
+
+## 5. IMPLEMENTATION RECOMMENDATIONS
+- Step-by-step approach if mentioned
+- Tools and technologies recommended
+- Configuration or setup notes
+- Code patterns or examples discussed
+
+## 6. EVOLUTION & ITERATIONS
+- How the solution evolved (if discussed)
+- Version history or iterations
+- What didn't work and why
+
+## 7. DEVELOPMENT ROADMAP
+- Suggested next steps
+- Future improvements mentioned
+- Areas for further research
+
+## 8. REFERENCES & RESOURCES
+- Any tools, libraries, or frameworks mentioned
+- External resources referenced
+- Related topics to explore
+
+Format with clear markdown headers and bullet points.
+If certain sections have no relevant content, note "Not discussed in video."
+
+Transcript:
+{transcript}
+```
+
+**Usage:**
+```bash
+# Generate seed document
+python youtube_analyzer.py URL --mode seed
+
+# Save to file for further development
+python youtube_analyzer.py URL --mode seed > docs/ARCHITECTURE_SEED.md
+```
+
+**Notes:**
+- Uses 8192 max_tokens (vs 4096 for other modes) for comprehensive output
+- Ideal for technical talks, architecture discussions, and tutorial videos
+- Output is formatted as markdown, ready for use as development documentation
+
 ### Raw Mode
 **Purpose:** Output transcript only (no AI analysis)
 

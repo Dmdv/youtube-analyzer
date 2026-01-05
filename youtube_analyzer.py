@@ -14,6 +14,7 @@ Modes:
     chapters    - Generate chapter timestamps
     qa          - Ask a specific question (requires --question)
     raw         - Just output the transcript
+    seed        - Generate comprehensive architecture seed document
 
 Models (via Poe API):
     gpt-5.2-pro          - Default, most capable GPT model (256K context)
@@ -140,6 +141,60 @@ Question: {question}
 
 Provide a clear, direct answer based only on information from the transcript.
 If the answer isn't in the transcript, say so.
+
+Transcript:
+{transcript}""",
+
+    "seed": """Analyze this video transcript and create a comprehensive SEED DOCUMENT for software development.
+
+Extract and organize ALL of the following:
+
+## 1. EXECUTIVE SUMMARY
+- Main topic and purpose of the content
+- Key problem being solved
+- Primary solution approach
+
+## 2. ARCHITECTURAL PATTERNS & DECISIONS
+For each pattern/architecture discussed:
+- Pattern name and description
+- Why it was chosen (trade-offs considered)
+- How it works (implementation approach)
+- Benefits and limitations
+
+## 3. KEY INSIGHTS & TAKEAWAYS
+- Technical insights (numbered list)
+- Strategic insights
+- Lessons learned
+- Best practices mentioned
+
+## 4. TERMINOLOGY & KEYWORDS
+- Technical terms with definitions
+- Domain-specific vocabulary
+- Acronyms and their meanings
+
+## 5. IMPLEMENTATION RECOMMENDATIONS
+- Step-by-step approach if mentioned
+- Tools and technologies recommended
+- Configuration or setup notes
+- Code patterns or examples discussed
+
+## 6. EVOLUTION & ITERATIONS
+- How the solution evolved (if discussed)
+- Version history or iterations
+- What didn't work and why
+
+## 7. DEVELOPMENT ROADMAP
+- Suggested next steps
+- Future improvements mentioned
+- Areas for further research
+
+## 8. REFERENCES & RESOURCES
+- Any tools, libraries, or frameworks mentioned
+- External resources referenced
+- Related topics to explore
+
+Format with clear markdown headers and bullet points. Be comprehensive but organized.
+If certain sections have no relevant content in the transcript, note "Not discussed in video."
 
 Transcript:
 {transcript}""",
@@ -377,11 +432,13 @@ def analyze_with_ai(transcript: str, mode: str, model: str = DEFAULT_MODEL, ques
     )
 
     # Streaming analysis with verified model
+    # Use higher token limit for seed mode (comprehensive documents)
+    max_tokens = 8192 if mode == "seed" else 4096
     response_text = ""
     try:
         with client.chat.completions.create(
             model=active_model,
-            max_tokens=4096,
+            max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}],
             stream=True,
         ) as stream:
@@ -418,7 +475,7 @@ Examples:
     )
     parser.add_argument('url', help='YouTube URL or video ID')
     parser.add_argument('--mode', '-m',
-                        choices=['summary', 'detailed', 'sentiment', 'topics', 'chapters', 'qa', 'raw'],
+                        choices=['summary', 'detailed', 'sentiment', 'topics', 'chapters', 'qa', 'raw', 'seed'],
                         default='summary',
                         help='Analysis mode (default: summary)')
     parser.add_argument('--question', '-q', help='Question for Q&A mode')

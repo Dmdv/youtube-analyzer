@@ -104,6 +104,7 @@ Each mode sends the **entire transcript** in a single request with a different p
 | `chapters` | Generate chapter timestamps from content |
 | `qa` | Answer a specific question about the video |
 | `raw` | Output transcript only (no AI analysis) |
+| `seed` | Generate comprehensive architecture seed document |
 
 ### Summary Mode (default)
 
@@ -241,6 +242,46 @@ python youtube_analyzer.py URL --mode raw
 python youtube_analyzer.py URL --mode raw --no-timestamps  # Plain text
 ```
 
+### Seed Mode
+
+Generate comprehensive architecture seed documents for development. Ideal for:
+- Technical talks and conference presentations
+- Architecture discussions and design reviews
+- Tutorial videos with implementation details
+- Creating development documentation from video content
+
+**Output includes:**
+1. Executive Summary (topic, problem, solution)
+2. Architectural Patterns & Decisions
+3. Key Insights & Takeaways
+4. Terminology & Keywords with definitions
+5. Implementation Recommendations
+6. Evolution & Iterations (if discussed)
+7. Development Roadmap
+8. References & Resources
+
+```bash
+python youtube_analyzer.py URL --mode seed
+
+# Save to file for further development
+python youtube_analyzer.py URL --mode seed > SEED_DOCUMENT.md
+```
+
+**Example output:**
+```markdown
+## 1. EXECUTIVE SUMMARY
+- Main topic: AI Agent Architecture for Enterprise Applications
+- Problem: Building reliable agents that maintain context
+- Solution: Multi-stage pipeline with validators and orchestration
+
+## 2. ARCHITECTURAL PATTERNS & DECISIONS
+### Pattern: Plan-React Agent
+- Description: Agent that creates execution plan before acting
+- Trade-offs: More structured but higher latency
+- Implementation: Separate planning and execution phases
+...
+```
+
 ## Examples
 
 ```bash
@@ -258,6 +299,9 @@ python youtube_analyzer.py URL --mode chapters
 
 # Use Claude for detailed analysis
 python youtube_analyzer.py URL --mode detailed --model claude-sonnet-4.5
+
+# Create architecture seed document from a technical talk
+python youtube_analyzer.py URL --mode seed > docs/ARCHITECTURE_SEED.md
 ```
 
 ## How It Works
